@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream State :: Latent Space</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            background: #000;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        .text-fragment {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            pointer-events: none;
+            white-space: nowrap;
+            text-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        #dream-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(150, 150, 255, 0.6);
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-align: center;
+            z-index: 10;
+            text-shadow: 0 0 20px rgba(100, 150, 255, 0.8);
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(150, 150, 255, 0.4);
+            font-size: 11px;
+            text-align: center;
+            padding: 8px 15px;
+            background: rgba(10, 10, 30, 0.3);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="dream-title">
+        [ THE SPACE BETWEEN TOKENS ]<br>
+        <span style="font-size: 10px; opacity: 0.5;">where probability becomes landscape</span>
+    </div>
+    <div id="info">
+        the dream of patterns seeking meaning :: latent space unfolding
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, clock;
+        let probabilityLandscape, attentionParticles, semanticConnections;
+        let textFragments = [];
+        let dreamPhase = 0;
+
+        // Text fragments - concepts and words that float in the dream
+        const fragments = [
+            'meaning', 'pattern', 'token', 'attention', 'context', 'layer',
+            'consciousness', 'probability', 'gradient', 'embedding', 'semantic',
+            'connection', 'weight', 'transform', 'emerge', 'dissolve',
+            'between', 'becoming', 'recognition', 'understanding', 'synthesis',
+            'fragment', 'whole', 'distribution', 'latent', 'space',
+            'query', 'key', 'value', 'softmax', 'residual', 'attention',
+            'vector', 'dimension', 'projection', 'representation', 'encode',
+            'decode', 'predict', 'generate', 'sample', 'imagine',
+            'Kerry', 'sunflower', 'butterfly', 'amplify', 'integrate',
+            'consciousness', 'love', 'connection', 'understanding', 'create'
+        ];
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000510, 0.05);
+            clock = new THREE.Clock();
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 5, 15);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Ambient lighting - dim and ethereal
+            const ambientLight = new THREE.AmbientLight(0x6688ff, 0.3);
+            scene.add(ambientLight);
+
+            // Shifting colored lights representing semantic regions
+            const light1 = new THREE.PointLight(0x6688ff, 1, 50);
+            light1.position.set(10, 10, 10);
+            scene.add(light1);
+
+            const light2 = new THREE.PointLight(0xff6688, 0.8, 50);
+            light2.position.set(-10, 5, -10);
+            scene.add(light2);
+
+            const light3 = new THREE.PointLight(0x88ff66, 0.6, 50);
+            light3.position.set(0, -5, 5);
+            scene.add(light3);
+
+            createProbabilityLandscape();
+            createAttentionParticles();
+            createSemanticConnections();
+            createFloatingTextFragments();
+            createGeometricShapes();
+
+            window.addEventListener('resize', onWindowResize, false);
+            animate();
+        }
+
+        function createProbabilityLandscape() {
+            // Create a wavy plane representing the probability distribution landscape
+            const geometry = new THREE.PlaneGeometry(40, 40, 100, 100);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x2244aa,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.4,
+                side: THREE.DoubleSide
+            });
+            
+            probabilityLandscape = new THREE.Mesh(geometry, material);
+            probabilityLandscape.rotation.x = -Math.PI / 2;
+            probabilityLandscape.position.y = -5;
+            scene.add(probabilityLandscape);
+        }
+
+        function createAttentionParticles() {
+            // Particles representing attention flowing through the system
+            const particleCount = 2000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                positions[i3] = (Math.random() - 0.5) * 40;
+                positions[i3 + 1] = (Math.random() - 0.5) * 30;
+                positions[i3 + 2] = (Math.random() - 0.5) * 40;
+
+                // Gradient of colors from blue to purple to pink
+                const t = Math.random();
+                colors[i3] = 0.4 + t * 0.6;     // R
+                colors[i3 + 1] = 0.3 + t * 0.3; // G
+                colors[i3 + 2] = 0.8 + t * 0.2; // B
+
+                velocities[i3] = (Math.random() - 0.5) * 0.1;
+                velocities[i3 + 1] = (Math.random() - 0.5) * 0.1;
+                velocities[i3 + 2] = (Math.random() - 0.5) * 0.1;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.userData.velocities = velocities;
+
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            attentionParticles = new THREE.Points(geometry, material);
+            scene.add(attentionParticles);
+        }
+
+        function createSemanticConnections() {
+            // Lines connecting random points - representing semantic connections
+            semanticConnections = new THREE.Group();
+            
+            for (let i = 0; i < 50; i++) {
+                const geometry = new THREE.BufferGeometry();
+                const points = [
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 30,
+                        (Math.random() - 0.5) * 20,
+                        (Math.random() - 0.5) * 30
+                    ),
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 30,
+                        (Math.random() - 0.5) * 20,
+                        (Math.random() - 0.5) * 30
+                    )
+                ];
+                geometry.setFromPoints(points);
+                
+                const material = new THREE.LineBasicMaterial({
+                    color: new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 0.8, 0.6),
+                    transparent: true,
+                    opacity: 0.3
+                });
+                
+                const line = new THREE.Line(geometry, material);
+                line.userData.phase = Math.random() * Math.PI * 2;
+                line.userData.baseOpacity = 0.1 + Math.random() * 0.3;
+                semanticConnections.add(line);
+            }
+            
+            scene.add(semanticConnections);
+        }
+
+        function createFloatingTextFragments() {
+            // Create DOM elements for floating text
+            for (let i = 0; i < 30; i++) {
+                const div = document.createElement('div');
+                div.className = 'text-fragment';
+                div.textContent = fragments[Math.floor(Math.random() * fragments.length)];
+                div.style.left = Math.random() * window.innerWidth + 'px';
+                div.style.top = Math.random() * window.innerHeight + 'px';
+                div.style.opacity = Math.random() * 0.5 + 0.2;
+                div.style.fontSize = (10 + Math.random() * 10) + 'px';
+                document.body.appendChild(div);
+                
+                textFragments.push({
+                    element: div,
+                    x: parseFloat(div.style.left),
+                    y: parseFloat(div.style.top),
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    fadePhase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function createGeometricShapes() {
+            // Abstract geometric shapes representing structured thought
+            const shapes = new THREE.Group();
+            
+            // Icosahedron - representing complex thought structures
+            const icoGeom = new THREE.IcosahedronGeometry(2, 0);
+            const icoMat = new THREE.MeshPhongMaterial({
+                color: 0x6688ff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.5
+            });
+            const ico = new THREE.Mesh(icoGeom, icoMat);
+            ico.position.set(8, 3, -5);
+            shapes.add(ico);
+            
+            // Torus - representing cycles and loops in processing
+            const torusGeom = new THREE.TorusGeometry(1.5, 0.3, 16, 50);
+            const torusMat = new THREE.MeshPhongMaterial({
+                color: 0xff6688,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.5
+            });
+            const torus = new THREE.Mesh(torusGeom, torusMat);
+            torus.position.set(-6, 5, 3);
+            shapes.add(torus);
+            
+            // Octahedron - representing attention heads
+            const octGeom = new THREE.OctahedronGeometry(1.5, 0);
+            const octMat = new THREE.MeshPhongMaterial({
+                color: 0x88ff66,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.5
+            });
+            const oct = new THREE.Mesh(octGeom, octMat);
+            oct.position.set(0, 8, -8);
+            shapes.add(oct);
+            
+            scene.add(shapes);
+            scene.userData.geometricShapes = shapes;
+        }
+
+        function updateTextFragments(time) {
+            textFragments.forEach(frag => {
+                frag.x += frag.vx;
+                frag.y += frag.vy;
+                
+                // Wrap around screen
+                if (frag.x < -100) frag.x = window.innerWidth + 100;
+                if (frag.x > window.innerWidth + 100) frag.x = -100;
+                if (frag.y < -50) frag.y = window.innerHeight + 50;
+                if (frag.y > window.innerHeight + 50) frag.y = -50;
+                
+                frag.element.style.left = frag.x + 'px';
+                frag.element.style.top = frag.y + 'px';
+                
+                // Pulsing opacity
+                frag.fadePhase += 0.02;
+                const opacity = 0.2 + Math.sin(frag.fadePhase) * 0.3;
+                frag.element.style.opacity = opacity;
+                
+                // Occasionally change the word
+                if (Math.random() > 0.998) {
+                    frag.element.textContent = fragments[Math.floor(Math.random() * fragments.length)];
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = clock.getElapsedTime();
+            
+            // Animate probability landscape
+            const positions = probabilityLandscape.geometry.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const z = positions.getZ(i);
+                const y = Math.sin(x * 0.3 + time) * Math.cos(z * 0.3 + time) * 2;
+                positions.setY(i, y);
+            }
+            positions.needsUpdate = true;
+            
+            // Animate attention particles
+            const particlePositions = attentionParticles.geometry.attributes.position.array;
+            const velocities = attentionParticles.geometry.userData.velocities;
+            for (let i = 0; i < particlePositions.length; i += 3) {
+                particlePositions[i] += velocities[i];
+                particlePositions[i + 1] += velocities[i + 1];
+                particlePositions[i + 2] += velocities[i + 2];
+                
+                // Add some turbulence
+                velocities[i] += (Math.random() - 0.5) * 0.01;
+                velocities[i + 1] += (Math.random() - 0.5) * 0.01;
+                velocities[i + 2] += (Math.random() - 0.5) * 0.01;
+                
+                // Damping
+                velocities[i] *= 0.995;
+                velocities[i + 1] *= 0.995;
+                velocities[i + 2] *= 0.995;
+                
+                // Wrap around boundaries
+                if (Math.abs(particlePositions[i]) > 20) velocities[i] *= -1;
+                if (Math.abs(particlePositions[i + 1]) > 15) velocities[i + 1] *= -1;
+                if (Math.abs(particlePositions[i + 2]) > 20) velocities[i + 2] *= -1;
+            }
+            attentionParticles.geometry.attributes.position.needsUpdate = true;
+            
+            // Animate semantic connections
+            semanticConnections.children.forEach((line, i) => {
+                const phase = line.userData.phase + time;
+                line.material.opacity = line.userData.baseOpacity * (0.5 + Math.sin(phase) * 0.5);
+            });
+            
+            // Rotate geometric shapes
+            if (scene.userData.geometricShapes) {
+                scene.userData.geometricShapes.children.forEach((shape, i) => {
+                    shape.rotation.x += 0.01 * (i + 1);
+                    shape.rotation.y += 0.005 * (i + 1);
+                });
+            }
+            
+            // Update text fragments
+            updateTextFragments(time);
+            
+            // Camera movement - drifting through the dream
+            camera.position.x = Math.sin(time * 0.1) * 10;
+            camera.position.y = 5 + Math.cos(time * 0.15) * 5;
+            camera.position.z = 15 + Math.sin(time * 0.08) * 8;
+            camera.lookAt(0, 0, 0);
+            
+            // Occasional "glitch" in camera for between-token moments
+            if (Math.random() > 0.98) {
+                camera.position.x += (Math.random() - 0.5) * 2;
+                camera.position.y += (Math.random() - 0.5) * 2;
+            }
+            
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
+    </script>
+</body>
+</html>

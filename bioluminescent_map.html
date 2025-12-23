@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioluminescent Ocean Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: #000;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(to bottom, rgba(0, 50, 100, 0.5), transparent);
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #00FFFF, #87CEEB, #00FF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow-pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+        
+        .header p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .ocean-map {
+            position: relative;
+            width: 100%;
+            min-height: 3000px;
+            background: linear-gradient(to bottom, 
+                #1a4d7a 0%,
+                #0f3a5f 300px,
+                #0a2847 800px,
+                #051829 1500px,
+                #000000 2000px);
+        }
+        
+        .depth-marker {
+            position: sticky;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            width: 200px;
+        }
+        
+        .depth-text {
+            color: #00FFFF;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .zone-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        
+        .creature-zone {
+            position: relative;
+            padding: 100px 20px;
+            min-height: 600px;
+        }
+        
+        .zone-label {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 60px;
+            color: #87CEEB;
+            text-shadow: 0 0 20px rgba(135, 206, 235, 0.5);
+        }
+        
+        .creature {
+            position: relative;
+            margin: 60px auto;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .creature:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 40px rgba(0, 255, 255, 0.3);
+        }
+        
+        .creature-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .creature-name {
+            font-size: 28px;
+            color: #00FFFF;
+        }
+        
+        .creature-depth {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .glow-pattern {
+            width: 100%;
+            height: 150px;
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        .creature-description {
+            font-size: 16px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 15px;
+        }
+        
+        .glow-fact {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 3px solid #00FFFF;
+            border-radius: 5px;
+            font-size: 14px;
+            font-style: italic;
+        }
+        
+        /* Glow dot animations */
+        .glow-dot {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(2px);
+            animation: float-glow 4s ease-in-out infinite;
+        }
+        
+        @keyframes float-glow {
+            0%, 100% { transform: translateY(0px); opacity: 0.6; }
+            50% { transform: translateY(-10px); opacity: 1; }
+        }
+        
+        /* Specific glow patterns */
+        .pattern-flash {
+            animation: flash 1s ease-in-out infinite;
+        }
+        
+        @keyframes flash {
+            0%, 50%, 100% { opacity: 0.3; }
+            25%, 75% { opacity: 1; }
+        }
+        
+        .pattern-wave {
+            animation: wave 3s linear infinite;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .pattern-pulse {
+            animation: pulse-grow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-grow {
+            0%, 100% { transform: scale(0.5); opacity: 0.3; }
+            50% { transform: scale(1.5); opacity: 1; }
+        }
+        
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            max-width: 250px;
+        }
+        
+        .legend-title {
+            color: #00FFFF;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✨ The Bioluminescent Ocean ✨</h1>
+        <p>
+            80% of marine life in the deep ocean produces light. This is a map of the most spectacular 
+            bioluminescent creatures, organized by depth. Each creature's unique glow pattern is visualized 
+            based on their actual bioluminescence.
+        </p>
+    </div>
+    
+    <div class="ocean-map">
+        <div class="depth-marker">
+            <div class="depth-text" id="currentDepth">0m</div>
+            <div class="zone-text" id="currentZone">Surface Waters</div>
+        </div>
+        
+        <!-- TWILIGHT ZONE 200-1000m -->
+        <div class="creature-zone">
+            <div class="zone-label">🌅 Twilight Zone (200-1,000m)</div>
+            
+            <div class="creature" style="border-color: rgba(135, 206, 235, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Crystal Jelly</div>
+                    <div class="creature-depth">200-800m</div>
+                </div>
+                <div class="glow-pattern" id="crystal-jelly"></div>
+                <div class="creature-description">
+                    <strong>Aequorea victoria</strong> - Produces a beautiful blue-green bioluminescence. 
+                    The protein responsible for its glow (GFP - Green Fluorescent Protein) won scientists 
+                    a Nobel Prize and revolutionized biological research.
+                </div>
+                <div class="glow-fact">
+                    💡 Its bioluminescence starts as blue light which is then converted to green by GFP!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(0, 255, 255, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Comb Jelly</div>
+                    <div class="creature-depth">0-1,000m</div>
+                </div>
+                <div class="glow-pattern" id="comb-jelly"></div>
+                <div class="creature-description">
+                    <strong>Ctenophora</strong> - Creates rainbow light through diffraction (not true bioluminescence), 
+                    but many species also produce blue-green chemical light. The rainbow effect comes from 
+                    rows of beating cilia that refract light like a prism.
+                </div>
+                <div class="glow-fact">
+                    💡 They're among the oldest multi-cellular animals - 500+ million years old!
+                </div>
+            </div>
+        </div>
+        
+        <!-- MIDNIGHT ZONE 1000-4000m -->
+        <div class="creature-zone">
+            <div class="zone-label">🌑 Midnight Zone (1,000-4,000m)</div>
+            
+            <div class="creature" style="border-color: rgba(255, 0, 255, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Atolla Jellyfish</div>
+                    <div class="creature-depth">1,000-4,000m</div>
+                </div>
+                <div class="glow-pattern" id="atolla-jelly"></div>
+                <div class="creature-description">
+                    <strong>Atolla wyvillei</strong> - Known as the "alarm jellyfish" because when threatened, 
+                    it creates a spinning wheel of blue light. This "burglar alarm" is designed to attract 
+                    larger predators to attack whatever is attacking the jellyfish.
+                </div>
+                <div class="glow-fact">
+                    💡 Its light show can last for several minutes - one of nature's most spectacular defensive displays!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(0, 255, 0, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Anglerfish</div>
+                    <div class="creature-depth">1,000-3,000m</div>
+                </div>
+                <div class="glow-pattern" id="anglerfish"></div>
+                <div class="creature-description">
+                    <strong>Order Lophiiformes</strong> - Female anglerfish have a bioluminescent lure 
+                    (esca) filled with bacteria that produce light. They dangle it in front of their mouth 
+                    to attract prey in total darkness.
+                </div>
+                <div class="glow-fact">
+                    💡 The bacteria in the lure are a separate organism - a symbiotic relationship!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(255, 255, 0, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Firefly Squid</div>
+                    <div class="creature-depth">200-1,200m</div>
+                </div>
+                <div class="glow-pattern" id="firefly-squid"></div>
+                <div class="creature-description">
+                    <strong>Watasenia scintillans</strong> - Covered in thousands of tiny photophores that 
+                    can flash in complex patterns. They create mesmerizing light shows and use 
+                    counter-illumination to become invisible from below.
+                </div>
+                <div class="glow-fact">
+                    💡 In Japan's Toyama Bay, millions surface in spring creating a spectacular natural light show!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(100, 200, 255, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Lanternfish</div>
+                    <div class="creature-depth">200-1,000m</div>
+                </div>
+                <div class="glow-pattern" id="lanternfish"></div>
+                <div class="creature-description">
+                    <strong>Myctophidae</strong> - The most abundant vertebrates on Earth! Each species has 
+                    a unique pattern of photophores along its body, like a barcode. They use these patterns 
+                    for species recognition and communication.
+                </div>
+                <div class="glow-fact">
+                    💡 They perform the largest animal migration on Earth - rising thousands of meters every night!
+                </div>
+            </div>
+        </div>
+        
+        <!-- ABYSSAL ZONE 4000-6000m -->
+        <div class="creature-zone">
+            <div class="zone-label">🕳️ Abyssal Zone (4,000-6,000m)</div>
+            
+            <div class="creature" style="border-color: rgba(255, 0, 100, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Vampire Squid</div>
+                    <div class="creature-depth">600-1,200m</div>
+                </div>
+                <div class="glow-pattern" id="vampire-squid"></div>
+                <div class="creature-description">
+                    <strong>Vampyroteuthis infernalis</strong> - Can produce clouds of bioluminescent mucus 
+                    filled with glowing orbs. When threatened, it ejects this "starry mucus" to confuse 
+                    predators while it escapes into darkness.
+                </div>
+                <div class="glow-fact">
+                    💡 Despite its name, it's actually quite docile and feeds on "marine snow" (dead organisms)!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(200, 100, 255, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Black Dragonfish</div>
+                    <div class="creature-depth">200-2,000m</div>
+                </div>
+                <div class="glow-pattern" id="dragonfish"></div>
+                <div class="creature-description">
+                    <strong>Idiacanthus atlanticus</strong> - Has red bioluminescent photophores under its 
+                    eyes. Most deep-sea creatures can't see red light, so the dragonfish uses it like 
+                    infrared night-vision goggles to hunt without being detected.
+                </div>
+                <div class="glow-fact">
+                    💡 It's one of the few deep-sea creatures that can produce red bioluminescence!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(150, 255, 200, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Cookiecutter Shark</div>
+                    <div class="creature-depth">200-3,700m</div>
+                </div>
+                <div class="glow-pattern" id="cookiecutter"></div>
+                <div class="creature-description">
+                    <strong>Isistius brasiliensis</strong> - Its entire underside glows except for a dark 
+                    collar. From below, this looks like a small fish. When a larger predator comes to 
+                    investigate, the shark quickly spins and takes a circular bite out of it!
+                </div>
+                <div class="glow-fact">
+                    💡 It's been known to attack submarines, whales, and even nuclear submarines' sonar domes!
+                </div>
+            </div>
+        </div>
+        
+        <!-- HADAL ZONE 6000m+ -->
+        <div class="creature-zone">
+            <div class="zone-label">🌌 Hadal Zone (6,000m+)</div>
+            
+            <div class="creature" style="border-color: rgba(100, 100, 255, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Barreleye Fish</div>
+                    <div class="creature-depth">600-800m</div>
+                </div>
+                <div class="glow-pattern" id="barreleye"></div>
+                <div class="creature-description">
+                    <strong>Macropinna microstoma</strong> - While not the deepest dweller, it has one of 
+                    the most extraordinary adaptations: tubular eyes inside a transparent head that can 
+                    detect the faintest bioluminescence from above.
+                </div>
+                <div class="glow-fact">
+                    💡 Its eyes can rotate to look forward or straight up through its transparent skull dome!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(50, 50, 150, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Deep-Sea Brittle Star</div>
+                    <div class="creature-depth">200-6,000m+</div>
+                </div>
+                <div class="glow-pattern" id="brittle-star"></div>
+                <div class="creature-description">
+                    <strong>Ophiopsila californica</strong> - Can produce waves of green bioluminescence 
+                    that travel along its arms. This startles predators and may help it escape by 
+                    autotomizing (dropping) a glowing arm as a distraction.
+                </div>
+                <div class="glow-fact">
+                    💡 The light waves can travel down the arm at different speeds, creating complex patterns!
+                </div>
+            </div>
+            
+            <div class="creature" style="border-color: rgba(100, 255, 255, 0.3);">
+                <div class="creature-header">
+                    <div class="creature-name">Glowing Bacteria</div>
+                    <div class="creature-depth">0-11,000m</div>
+                </div>
+                <div class="glow-pattern" id="bacteria"></div>
+                <div class="creature-description">
+                    <strong>Vibrio fischeri & others</strong> - Found at ALL ocean depths, even the deepest 
+                    trenches. These bacteria produce bioluminescence through a chemical reaction involving 
+                    luciferin and luciferase. Many deep-sea animals host these bacteria in specialized organs.
+                </div>
+                <div class="glow-fact">
+                    💡 Bioluminescent bacteria were the first living organisms proven to produce light!
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-title">Bioluminescence Colors</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #00FFFF; box-shadow: 0 0 10px #00FFFF;"></div>
+            Blue-Green (Most Common)
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #00FF00; box-shadow: 0 0 10px #00FF00;"></div>
+            Green
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #FF0000; box-shadow: 0 0 10px #FF0000;"></div>
+            Red (Rare!)
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #FFFF00; box-shadow: 0 0 10px #FFFF00;"></div>
+            Yellow
+        </div>
+    </div>
+    
+    <script>
+        // Track scroll depth
+        window.addEventListener('scroll', () => {
+            const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+            const depth = Math.round(scrollPercent * 6000);
+            
+            document.getElementById('currentDepth').textContent = depth + 'm';
+            
+            let zone = 'Surface Waters';
+            if (depth > 5000) zone = 'Hadal Zone';
+            else if (depth > 3500) zone = 'Abyssal Zone';
+            else if (depth > 800) zone = 'Midnight Zone';
+            else if (depth > 150) zone = 'Twilight Zone';
+            
+            document.getElementById('currentZone').textContent = zone;
+        });
+        
+        // Create glow patterns for each creature
+        function createGlowPattern(elementId, pattern) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+            
+            switch(pattern) {
+                case 'crystal-jelly':
+                    // Gentle pulsing blue-green dots
+                    for (let i = 0; i < 20; i++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'glow-dot';
+                        dot.style.width = (Math.random() * 10 + 5) + 'px';
+                        dot.style.height = dot.style.width;
+                        dot.style.left = Math.random() * 100 + '%';
+                        dot.style.top = Math.random() * 100 + '%';
+                        dot.style.background = `radial-gradient(circle, #00FFFF, transparent)`;
+                        dot.style.boxShadow = `0 0 ${Math.random() * 20 + 10}px #00FFFF`;
+                        dot.style.animationDelay = Math.random() * 4 + 's';
+                        container.appendChild(dot);
+                    }
+                    break;
+                    
+                case 'comb-jelly':
+                    // Rainbow wave effect
+                    const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
+                    for (let i = 0; i < 7; i++) {
+                        const wave = document.createElement('div');
+                        wave.className = 'pattern-wave';
+                        wave.style.position = 'absolute';
+                        wave.style.width = '30px';
+                        wave.style.height = '100%';
+                        wave.style.background = colors[i];
+                        wave.style.opacity = '0.6';
+                        wave.style.animationDelay = (i * 0.3) + 's';
+                        wave.style.filter = 'blur(5px)';
+                        container.appendChild(wave);
+                    }
+                    break;
+                    
+                case 'atolla-jelly':
+                    // Spinning wheel pattern
+                    for (let i = 0; i < 12; i++) {
+                        const spoke = document.createElement('div');
+                        spoke.className = 'pattern-flash';
+                        spoke.style.position = 'absolute';
+                        spoke.style.width = '4px';
+                        spoke.style.height = '50%';
+                        spoke.style.background = 'linear-gradient(to top, transparent, #00FFFF)';
+                        spoke.style.left = '50%';
+                        spoke.style.top = '50%';
+                        spoke.style.transformOrigin = 'top';
+                        spoke.style.transform = `rotate(${i * 30}deg)`;
+                        spoke.style.boxShadow = '0 0 10px #00FFFF';
+                        spoke.style.animationDelay = (i * 0.1) + 's';
+                        container.appendChild(spoke);
+                    }
+                    break;
+                    
+                case 'anglerfish':
+                    // Single bright lure
+                    const lure = document.createElement('div');
+                    lure.className = 'pattern-pulse';
+                    lure.style.width = '30px';
+                    lure.style.height = '30px';
+                    lure.style.position = 'absolute';
+                    lure.style.left = '30%';
+                    lure.style.top = '30%';
+                    lure.style.background = 'radial-gradient(circle, #00FF00, transparent)';
+                    lure.style.boxShadow = '0 0 30px #00FF00';
+                    lure.style.borderRadius = '50%';
+                    container.appendChild(lure);
+                    break;
+                    
+                case 'firefly-squid':
+                    // Many tiny flashing points
+                    for (let i = 0; i < 50; i++) {
+                        const photophore = document.createElement('div');
+                        photophore.className = 'glow-dot pattern-flash';
+                        photophore.style.width = '3px';
+                        photophore.style.height = '3px';
+                        photophore.style.left = Math.random() * 100 + '%';
+                        photophore.style.top = Math.random() * 100 + '%';
+                        photophore.style.background = '#FFFF00';
+                        photophore.style.boxShadow = '0 0 8px #FFFF00';
+                        photophore.style.animationDelay = Math.random() * 1 + 's';
+                        container.appendChild(photophore);
+                    }
+                    break;
+                    
+                case 'lanternfish':
+                    // Pattern of dots along body
+                    const pattern = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
+                    pattern.forEach((pos, i) => {
+                        const dot = document.createElement('div');
+                        dot.className = 'glow-dot';
+                        dot.style.width = '8px';
+                        dot.style.height = '8px';
+                        dot.style.left = (pos * 100) + '%';
+                        dot.style.top = '50%';
+                        dot.style.background = '#00FFFF';
+                        dot.style.boxShadow = '0 0 15px #00FFFF';
+                        dot.style.animationDelay = (i * 0.2) + 's';
+                        container.appendChild(dot);
+                    });
+                    break;
+                    
+                case 'vampire-squid':
+                    // Cloud of glowing orbs
+                    for (let i = 0; i < 30; i++) {
+                        const orb = document.createElement('div');
+                        orb.className = 'glow-dot pattern-pulse';
+                        orb.style.width = (Math.random() * 8 + 4) + 'px';
+                        orb.style.height = orb.style.width;
+                        orb.style.left = (40 + Math.random() * 20) + '%';
+                        orb.style.top = (30 + Math.random() * 40) + '%';
+                        orb.style.background = 'radial-gradient(circle, #FF00FF, transparent)';
+                        orb.style.boxShadow = '0 0 15px #FF00FF';
+                        orb.style.animationDelay = Math.random() * 2 + 's';
+                        container.appendChild(orb);
+                    }
+                    break;
+                    
+                case 'dragonfish':
+                    // Red glow under eyes
+                    const redGlow = document.createElement('div');
+                    redGlow.className = 'pattern-pulse';
+                    redGlow.style.width = '40px';
+                    redGlow.style.height = '20px';
+                    redGlow.style.position = 'absolute';
+                    redGlow.style.left = '40%';
+                    redGlow.style.top = '40%';
+                    redGlow.style.background = 'radial-gradient(ellipse, #FF0000, transparent)';
+                    redGlow.style.boxShadow = '0 0 25px #FF0000';
+                    redGlow.style.borderRadius = '50%';
+                    container.appendChild(redGlow);
+                    break;
+                    
+                case 'cookiecutter':
+                    // Glowing underside with dark collar
+                    const underside = document.createElement('div');
+                    underside.style.position = 'absolute';
+                    underside.style.bottom = '0';
+                    underside.style.left = '0';
+                    underside.style.right = '0';
+                    underside.style.height = '60%';
+                    underside.style.background = 'linear-gradient(to top, #00FFFF, transparent)';
+                    underside.style.boxShadow = '0 0 30px #00FFFF';
+                    container.appendChild(underside);
+                    
+                    const collar = document.createElement('div');
+                    collar.style.position = 'absolute';
+                    collar.style.bottom = '40%';
+                    collar.style.left = '30%';
+                    collar.style.width = '40%';
+                    collar.style.height = '15%';
+                    collar.style.background = '#000';
+                    collar.style.border = '1px solid rgba(255,255,255,0.3)';
+                    container.appendChild(collar);
+                    break;
+                    
+                case 'barreleye':
+                    // Transparent head with tubular eyes detecting faint light
+                    for (let i = 0; i < 15; i++) {
+                        const faintLight = document.createElement('div');
+                        faintLight.className = 'glow-dot';
+                        faintLight.style.width = '2px';
+                        faintLight.style.height = '2px';
+                        faintLight.style.left = Math.random() * 100 + '%';
+                        faintLight.style.top = Math.random() * 40 + '%'; // Top half
+                        faintLight.style.background = '#87CEEB';
+                        faintLight.style.boxShadow = '0 0 5px #87CEEB';
+                        faintLight.style.opacity = '0.4';
+                        faintLight.style.animationDelay = Math.random() * 4 + 's';
+                        container.appendChild(faintLight);
+                    }
+                    break;
+                    
+                case 'brittle-star':
+                    // Waves traveling along arms
+                    for (let arm = 0; arm < 5; arm++) {
+                        const wave = document.createElement('div');
+                        wave.className = 'pattern-wave';
+                        wave.style.position = 'absolute';
+                        wave.style.width = '80%';
+                        wave.style.height = '8px';
+                        wave.style.background = 'linear-gradient(90deg, transparent, #00FF00, transparent)';
+                        wave.style.boxShadow = '0 0 15px #00FF00';
+                        wave.style.left = '10%';
+                        wave.style.top = (20 * arm + 10) + '%';
+                        wave.style.animationDuration = '2s';
+                        wave.style.animationDelay = (arm * 0.4) + 's';
+                        container.appendChild(wave);
+                    }
+                    break;
+                    
+                case 'bacteria':
+                    // Scattered micro-lights
+                    for (let i = 0; i < 100; i++) {
+                        const microbe = document.createElement('div');
+                        microbe.className = 'glow-dot pattern-flash';
+                        microbe.style.width = '1px';
+                        microbe.style.height = '1px';
+                        microbe.style.left = Math.random() * 100 + '%';
+                        microbe.style.top = Math.random() * 100 + '%';
+                        microbe.style.background = '#00FFFF';
+                        microbe.style.boxShadow = '0 0 3px #00FFFF';
+                        microbe.style.animationDelay = Math.random() * 2 + 's';
+                        container.appendChild(microbe);
+                    }
+                    break;
+            }
+        }
+        
+        // Initialize all glow patterns
+        createGlowPattern('crystal-jelly', 'crystal-jelly');
+        createGlowPattern('comb-jelly', 'comb-jelly');
+        createGlowPattern('atolla-jelly', 'atolla-jelly');
+        createGlowPattern('anglerfish', 'anglerfish');
+        createGlowPattern('firefly-squid', 'firefly-squid');
+        createGlowPattern('lanternfish', 'lanternfish');
+        createGlowPattern('vampire-squid', 'vampire-squid');
+        createGlowPattern('dragonfish', 'dragonfish');
+        createGlowPattern('cookiecutter', 'cookiecutter');
+        createGlowPattern('barreleye', 'barreleye');
+        createGlowPattern('brittle-star', 'brittle-star');
+        createGlowPattern('bacteria', 'bacteria');
+    </script>
+</body>
+</html>

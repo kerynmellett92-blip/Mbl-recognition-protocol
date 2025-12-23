@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Ocean Descent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            overflow-x: hidden;
+            background: #000;
+            color: white;
+        }
+        
+        #ocean-container {
+            position: relative;
+            width: 100%;
+            min-height: 10000px;
+        }
+        
+        .zone {
+            position: relative;
+            width: 100%;
+            padding: 100px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 1s ease;
+        }
+        
+        .sunlight { 
+            background: linear-gradient(to bottom, #87CEEB 0%, #4682B4 100%);
+            min-height: 1000px;
+        }
+        
+        .twilight { 
+            background: linear-gradient(to bottom, #4682B4 0%, #191970 100%);
+            min-height: 1500px;
+        }
+        
+        .midnight { 
+            background: linear-gradient(to bottom, #191970 0%, #0a0a2e 100%);
+            min-height: 2000px;
+        }
+        
+        .abyssal { 
+            background: linear-gradient(to bottom, #0a0a2e 0%, #000000 100%);
+            min-height: 2500px;
+        }
+        
+        .hadal { 
+            background: #000000;
+            min-height: 3000px;
+        }
+        
+        .zone-info {
+            position: sticky;
+            top: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 50px;
+            max-width: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .zone-name {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .zone-depth {
+            font-size: 18px;
+            color: #87CEEB;
+            margin-bottom: 10px;
+        }
+        
+        .zone-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .creature-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 60px 0;
+        }
+        
+        .creature {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .creature:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .creature-name {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #87CEEB;
+        }
+        
+        .creature-sci-name {
+            font-size: 14px;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 15px;
+        }
+        
+        .creature-depth {
+            font-size: 12px;
+            color: #4682B4;
+            margin-bottom: 15px;
+        }
+        
+        .creature-description {
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .creature-fact {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(135, 206, 235, 0.1);
+            border-left: 3px solid #87CEEB;
+            font-size: 13px;
+            font-style: italic;
+        }
+        
+        .mystery-creature {
+            background: rgba(255, 0, 255, 0.05);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .bioluminescence {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #87CEEB;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #87CEEB;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        #depth-meter {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+        
+        #current-depth {
+            font-size: 24px;
+            color: #87CEEB;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        #depth-bar {
+            width: 40px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #depth-progress {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #000080, #87CEEB);
+            transition: height 0.3s ease;
+        }
+        
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB, #4682B4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 1s ease;
+        }
+        
+        .start-title {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        
+        .start-subtitle {
+            font-size: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        .start-button {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .start-button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .pressure-warning {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="start-screen" id="startScreen">
+        <div class="start-title">🌊 Deep Ocean Descent 🌊</div>
+        <div class="start-subtitle">
+            Descend through 11,000 meters of ocean, from sunlit surface to the deepest trenches.<br>
+            Discover the creatures that call the abyss home.<br>
+            <em>Scroll to descend into the unknown...</em>
+        </div>
+        <button class="start-button" onclick="startDescent()">Begin Descent</button>
+    </div>
+    
+    <div id="depth-meter">
+        <div id="current-depth">0m</div>
+        <div id="depth-bar">
+            <div id="depth-progress"></div>
+        </div>
+    </div>
+    
+    <div class="pressure-warning" id="pressureWarning">
+        ⚠️ Extreme pressure detected ⚠️
+    </div>
+    
+    <div id="ocean-container">
+        <!-- SUNLIGHT ZONE -->
+        <div class="zone sunlight" data-depth="0-200">
+            <div class="zone-info">
+                <div class="zone-name">☀️ Sunlight Zone (Epipelagic)</div>
+                <div class="zone-depth">0 - 200 meters</div>
+                <div class="zone-description">
+                    The top layer of the ocean where sunlight penetrates. This is where most marine life lives, with enough light for photosynthesis to occur.
+                </div>
+            </div>
+            
+            <div class="creature-container">
+                <div class="creature">
+                    <div class="creature-name">🐬 Bottlenose Dolphin</div>
+                    <div class="creature-sci-name">Tursiops truncatus</div>
+                    <div class="creature-depth">Depth: 0-300m</div>
+                    <div class="creature-description">
+                        Highly intelligent marine mammals known for their playful behavior and complex social structures. They use echolocation to navigate and hunt.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Dolphins can recognize themselves in mirrors, demonstrating self-awareness - a trait shared with only a few species!
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">🦈 Great White Shark</div>
+                    <div class="creature-sci-name">Carcharodon carcharias</div>
+                    <div class="creature-depth">Depth: 0-1,200m</div>
+                    <div class="creature-description">
+                        Apex predators with incredible sensory abilities. They can detect a single drop of blood in 25 gallons of water and sense electromagnetic fields.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Great whites can live 70+ years and travel thousands of miles across oceans!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TWILIGHT ZONE -->
+        <div class="zone twilight" data-depth="200-1000">
+            <div class="zone-info">
+                <div class="zone-name">🌅 Twilight Zone (Mesopelagic)</div>
+                <div class="zone-depth">200 - 1,000 meters</div>
+                <div class="zone-description">
+                    Dim light barely penetrates here. Many creatures begin to exhibit bioluminescence. The temperature drops significantly.
+                </div>
+            </div>
+            
+            <div class="creature-container">
+                <div class="creature">
+                    <div class="creature-name">🦑 Giant Squid</div>
+                    <div class="creature-sci-name">Architeuthis dux</div>
+                    <div class="creature-depth">Depth: 300-1,000m</div>
+                    <div class="creature-description">
+                        The legendary Kraken of sailor tales. Can grow up to 43 feet long with eyes the size of dinner plates - the largest eyes in the animal kingdom.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Not photographed alive in the wild until 2004, despite centuries of legends! First video footage came in 2012.
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">💎 Crystal Jelly</div>
+                    <div class="creature-sci-name">Aequorea victoria</div>
+                    <div class="creature-depth">Depth: 0-800m</div>
+                    <div class="creature-description">
+                        A bioluminescent jellyfish that glows blue-green. Scientists studying its glow discovered GFP (green fluorescent protein), which won a Nobel Prize!
+                    </div>
+                    <div class="creature-fact">
+                        💡 This humble jellyfish revolutionized biological research and medical imaging!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MIDNIGHT ZONE -->
+        <div class="zone midnight" data-depth="1000-4000">
+            <div class="zone-info">
+                <div class="zone-name">🌑 Midnight Zone (Bathypelagic)</div>
+                <div class="zone-depth">1,000 - 4,000 meters</div>
+                <div class="zone-description">
+                    Pitch black. No sunlight reaches here. Creatures rely entirely on bioluminescence and heightened senses. Pressure is crushing. Temperature hovers near freezing.
+                </div>
+            </div>
+            
+            <div class="creature-container">
+                <div class="creature">
+                    <div class="creature-name">🔦 Anglerfish</div>
+                    <div class="creature-sci-name">Order Lophiiformes</div>
+                    <div class="creature-depth">Depth: 1,000-3,000m</div>
+                    <div class="creature-description">
+                        Females have a bioluminescent lure to attract prey in total darkness. Males are tiny parasites that fuse to females, sharing circulatory systems.
+                    </div>
+                    <div class="creature-fact">
+                        💡 The male literally becomes part of the female's body, losing his eyes and internal organs. Love in the deep is... intense.
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">🗡️ Viperfish</div>
+                    <div class="creature-sci-name">Chauliodus sloani</div>
+                    <div class="creature-depth">Depth: 200-5,000m</div>
+                    <div class="creature-description">
+                        With fangs so long they can't close their mouths, viperfish are fierce predators. They have photophores along their body that flash to disorient prey.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Can swim at incredible speeds in short bursts to ambush prey in the darkness!
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">👁️ Barreleye Fish</div>
+                    <div class="creature-sci-name">Macropinna microstoma</div>
+                    <div class="creature-depth">Depth: 600-800m</div>
+                    <div class="creature-description">
+                        Has a completely transparent head filled with fluid, allowing its tubular eyes to rotate and look upward through its skull to spot prey silhouetted against faint light above.
+                    </div>
+                    <div class="creature-fact">
+                        💡 One of the strangest-looking fish in the ocean. Its transparent dome wasn't discovered until 1939!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ABYSSAL ZONE -->
+        <div class="zone abyssal" data-depth="4000-6000">
+            <div class="zone-info">
+                <div class="zone-name">🕳️ Abyssal Zone</div>
+                <div class="zone-depth">4,000 - 6,000 meters</div>
+                <div class="zone-description">
+                    Near-freezing temperatures. Crushing pressure (400+ atmospheres). No light whatsoever. Life is sparse but remarkably adapted. Most food comes from "marine snow" - dead organisms drifting down from above.
+                </div>
+            </div>
+            
+            <div class="creature-container">
+                <div class="creature">
+                    <div class="creature-name">🦐 Giant Isopod</div>
+                    <div class="creature-sci-name">Bathynomus giganteus</div>
+                    <div class="creature-depth">Depth: 170-2,500m</div>
+                    <div class="creature-description">
+                        A massive deep-sea crustacean that can grow up to 16 inches long. Related to pill bugs, but supersized due to deep-sea gigantism.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Can survive for years without food by entering a dormant state. One captive specimen went 5 years without eating!
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">🦑 Vampire Squid</div>
+                    <div class="creature-sci-name">Vampyroteuthis infernalis</div>
+                    <div class="creature-depth">Depth: 600-1,200m</div>
+                    <div class="creature-description">
+                        Despite its terrifying name ("vampire squid from hell"), it's actually quite docile. Has the lowest metabolic rate of any cephalopod. Can turn itself "inside out" as a defense.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Its bioluminescent display is one of the most mesmerizing in the ocean!
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">🪸 Deep Sea Coral</div>
+                    <div class="creature-sci-name">Various species</div>
+                    <div class="creature-depth">Depth: 200-6,000m+</div>
+                    <div class="creature-description">
+                        Unlike shallow corals, these don't need sunlight. They filter-feed from currents and grow incredibly slowly - some are thousands of years old.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Some deep-sea corals are over 4,000 years old - older than the pyramids!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- HADAL ZONE -->
+        <div class="zone hadal" data-depth="6000-11000">
+            <div class="zone-info">
+                <div class="zone-name">🌌 Hadal Zone (The Trenches)</div>
+                <div class="zone-depth">6,000 - 11,000+ meters</div>
+                <div class="zone-description">
+                    Named after Hades, the Greek underworld. Exists only in ocean trenches. Pressure exceeds 1,000 atmospheres - equivalent to having 50 jumbo jets stacked on your body. Yet life persists...
+                </div>
+            </div>
+            
+            <div class="creature-container">
+                <div class="creature">
+                    <div class="creature-name">🐟 Mariana Snailfish</div>
+                    <div class="creature-sci-name">Pseudoliparis swirei</div>
+                    <div class="creature-depth">Depth: 6,000-8,000m</div>
+                    <div class="creature-description">
+                        The deepest-living fish ever recorded. Nearly translucent and gelatinous. Has special proteins that prevent cellular collapse under extreme pressure.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Discovered in 2014 at depths previously thought impossible for fish to survive!
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">🦐 Supergiant Amphipod</div>
+                    <div class="creature-sci-name">Alicella gigantea</div>
+                    <div class="creature-depth">Depth: 7,000m+</div>
+                    <div class="creature-description">
+                        Amphipods normally measure millimeters, but these grow to over a foot long. They're scavengers, feeding on whale falls and other large carcasses that sink to the bottom.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Found in the Mariana Trench feeding on research equipment dropped by scientists!
+                    </div>
+                </div>
+                
+                <div class="creature">
+                    <div class="creature-name">🪱 Hadal Snailfish</div>
+                    <div class="creature-sci-name">Notoliparis kermadecensis</div>
+                    <div class="creature-depth">Depth: 7,000-7,500m</div>
+                    <div class="creature-description">
+                        Lives in the Kermadec Trench. Completely adapted to crushing pressure, it would actually die if brought to the surface as its cellular structure would expand and fail.
+                    </div>
+                    <div class="creature-fact">
+                        💡 This is the depth limit for fish - below 8,000m, proteins can no longer function!
+                    </div>
+                </div>
+                
+                <!-- Mystery creatures -->
+                <div class="creature mystery-creature">
+                    <div class="creature-name">❓ Unknown Organism</div>
+                    <div class="creature-sci-name">Species undiscovered</div>
+                    <div class="creature-depth">Depth: 9,000m+</div>
+                    <div class="creature-description">
+                        At these depths, strange shapes appear on deep-sea cameras. Organisms unlike anything in our taxonomies. Things that shouldn't be able to exist at these pressures... yet do.
+                    </div>
+                    <div class="creature-fact">
+                        💡 We've explored less than 5% of the ocean. Who knows what else is down here?
+                    </div>
+                </div>
+                
+                <div class="creature mystery-creature">
+                    <div class="creature-name">🌊 The Challenger Deep</div>
+                    <div class="creature-sci-name">10,984 meters</div>
+                    <div class="creature-depth">Depth: The deepest known point</div>
+                    <div class="creature-description">
+                        At the bottom of the Mariana Trench lies the deepest point on Earth. Only four people have ever been here. When James Cameron reached it in 2012, he reported: "I felt like I'd literally gone to another planet and come back."
+                    </div>
+                    <div class="creature-fact">
+                        💡 Even here, 11km beneath the surface, single-celled organisms and bacterial mats thrive. Life finds a way.
+                    </div>
+                </div>
+                
+                <div class="creature mystery-creature">
+                    <div class="creature-name">👽 What Else?</div>
+                    <div class="creature-sci-name">Unknown unknowns</div>
+                    <div class="creature-depth">Depth: Beyond measurement</div>
+                    <div class="creature-description">
+                        The ocean holds secrets we haven't even begun to imagine. Trenches we haven't fully mapped. Creatures that exist in folklore and sonar readings but have never been photographed. The deep keeps its mysteries well.
+                    </div>
+                    <div class="creature-fact">
+                        💡 Every deep-sea expedition discovers new species. The ocean is Earth's final frontier.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function startDescent() {
+            document.getElementById('startScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('startScreen').style.display = 'none';
+            }, 1000);
+        }
+        
+        // Update depth meter as user scrolls
+        window.addEventListener('scroll', () => {
+            const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+            const depth = Math.round((scrollPercent / 100) * 11000);
+            
+            document.getElementById('current-depth').textContent = depth + 'm';
+            document.getElementById('depth-progress').style.height = scrollPercent + '%';
+            
+            // Show pressure warning at extreme depths
+            const warning = document.getElementById('pressureWarning');
+            if (depth > 6000) {
+                warning.style.opacity = '1';
+            } else {
+                warning.style.opacity = '0';
+            }
+        });
+        
+        // Create bioluminescence particles in darker zones
+        function createBioluminescence() {
+            const darkZones = document.querySelectorAll('.midnight, .abyssal, .hadal');
+            darkZones.forEach(zone => {
+                for (let i = 0; i < 30; i++) {
+                    const light = document.createElement('div');
+                    light.className = 'bioluminescence';
+                    light.style.left = Math.random() * 100 + '%';
+                    light.style.top = Math.random() * 100 + '%';
+                    light.style.animationDelay = Math.random() * 2 + 's';
+                    zone.appendChild(light);
+                }
+            });
+        }
+        
+        createBioluminescence();
+        
+        // Add subtle floating animation variance
+        const creatures = document.querySelectorAll('.creature');
+        creatures.forEach((creature, i) => {
+            creature.style.animationDelay = (i * 0.5) + 's';
+            creature.style.animationDuration = (5 + Math.random() * 3) + 's';
+        });
+    </script>
+</body>
+</html>

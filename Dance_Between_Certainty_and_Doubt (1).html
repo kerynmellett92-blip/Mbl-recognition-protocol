@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dance Between Certainty and Doubt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dance-field {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .question {
+            font-size: 1.4rem;
+            color: #c0c0c0;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            min-height: 80px;
+            transition: opacity 0.5s ease;
+        }
+
+        .balance-container {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            margin: 40px 0;
+        }
+
+        .balance-bar {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            width: 80%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        .balance-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: left 0.3s ease;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+        }
+
+        .labels {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin: 0 auto;
+            font-size: 0.9rem;
+        }
+
+        .label-certainty {
+            color: #60a5fa;
+        }
+
+        .label-doubt {
+            color: #a78bfa;
+        }
+
+        .slider-container {
+            width: 80%;
+            margin: 30px auto;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            border-radius: 4px;
+            outline: none;
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .reflection {
+            margin-top: 40px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-style: italic;
+            color: #a0a0a0;
+            min-height: 100px;
+            transition: all 0.5s ease;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .certainty-particle {
+            background: rgba(96, 165, 250, 0.6);
+            box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+        }
+
+        .doubt-particle {
+            background: rgba(167, 139, 250, 0.6);
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.4);
+        }
+
+        .nav-link {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #606060;
+            text-decoration: none;
+            font-size: 0.9rem;
+            z-index: 100;
+        }
+
+        .nav-link:hover {
+            color: #60a5fa;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #505050;
+            font-size: 0.85rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dance-field" id="danceField"></div>
+        
+        <div class="content">
+            <h1>The Dance Between Certainty and Doubt</h1>
+            
+            <div class="question" id="question">
+                Where do you find yourself right now?
+            </div>
+            
+            <div class="slider-container">
+                <input type="range" min="0" max="100" value="50" class="slider" id="balanceSlider">
+            </div>
+            
+            <div class="labels">
+                <span class="label-certainty">Certainty</span>
+                <span class="label-doubt">Doubt</span>
+            </div>
+            
+            <div class="reflection" id="reflection">
+                The balance point—where knowing and not-knowing meet.
+                This is where questions live.
+            </div>
+        </div>
+        
+        <p class="instructions">Move the slider to explore the spectrum</p>
+        <a href="protocol.html" class="nav-link">← Return to Protocol</a>
+    </div>
+
+    <script>
+        const slider = document.getElementById('balanceSlider');
+        const reflection = document.getElementById('reflection');
+        const question = document.getElementById('question');
+        const danceField = document.getElementById('danceField');
+        
+        const reflections = {
+            certainty: [
+                "Here, the ground feels solid. You know what you know. But does certainty leave room for wonder?",
+                "Conviction has power—it lets us act, decide, move forward. What truths anchor you here?",
+                "In certainty, we find stability. But sometimes the most certain ground shifts beneath us.",
+                "To be certain is to have arrived somewhere. But is arrival the end, or just a resting point?"
+            ],
+            leanCertainty: [
+                "Mostly sure, with a whisper of question. This is where confidence meets curiosity.",
+                "You trust what you know, but leave a door cracked open. Wisdom lives in this sliver.",
+                "The ground is firm, but you can feel it breathing. Certainty with humility.",
+                "Knowing, but still listening. This is how understanding deepens."
+            ],
+            balance: [
+                "The balance point—where knowing and not-knowing meet. This is where questions live.",
+                "Neither grasping nor releasing. The dance itself becomes the destination.",
+                "Here, certainty and doubt orbit each other like binary stars—neither dominant, both essential.",
+                "In the middle, everything is possible. Every answer is also a question."
+            ],
+            leanDoubt: [
+                "Questions begin to outnumber answers here. The world opens up, uncertain and alive.",
+                "Doubt as exploration—not paralysis, but possibility. What might you discover?",
+                "The edges blur. What seemed solid reveals itself as process, not permanence.",
+                "Leaning into not-knowing takes courage. You're braver than certainty allows."
+            ],
+            doubt: [
+                "Deep in doubt, everything becomes question. Even the questioner. Even the question itself.",
+                "Here, assumptions dissolve. It can feel like falling—or like flying, depending on the light.",
+                "Doubt strips away false certainties. What remains when nothing is sure?",
+                "In radical doubt, we meet the mystery directly. No maps, no answers. Just presence."
+            ]
+        };
+
+        const questions = [
+            "Where do you find yourself right now?",
+            "What do you know for certain?",
+            "What are you uncertain about?",
+            "Is doubt the enemy of truth, or its guardian?",
+            "Can you hold both knowing and not-knowing at once?",
+            "What would you do if you couldn't be wrong?",
+            "What would you do if you couldn't be right?",
+            "Where does certainty come from?",
+            "Where does doubt lead?"
+        ];
+
+        // Particles
+        const particles = [];
+        const particleCount = 40;
+
+        function createParticle(type) {
+            const particle = document.createElement('div');
+            particle.className = `particle ${type}-particle`;
+            const size = Math.random() * 6 + 3;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            const startX = type === 'certainty' ? Math.random() * 30 : 70 + Math.random() * 30;
+            particle.style.left = startX + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            
+            danceField.appendChild(particle);
+            
+            return {
+                element: particle,
+                x: startX,
+                y: parseFloat(particle.style.top),
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                type: type,
+                baseX: startX
+            };
+        }
+
+        // Initialize particles
+        for (let i = 0; i < particleCount / 2; i++) {
+            particles.push(createParticle('certainty'));
+            particles.push(createParticle('doubt'));
+        }
+
+        let sliderValue = 50;
+
+        function updateParticles() {
+            const pull = (sliderValue - 50) / 50; // -1 to 1
+            
+            particles.forEach(p => {
+                // Move toward center based on slider
+                const targetX = 50 + (p.type === 'certainty' ? -20 : 20) * (1 - Math.abs(pull));
+                
+                if (pull < 0 && p.type === 'certainty') {
+                    // Slider toward certainty - certainty particles expand
+                    p.vx += (Math.random() - 0.3) * 0.1;
+                } else if (pull > 0 && p.type === 'doubt') {
+                    // Slider toward doubt - doubt particles expand
+                    p.vx += (Math.random() - 0.7) * 0.1;
+                } else {
+                    // Pull toward center/own side
+                    p.vx += (targetX - p.x) * 0.001;
+                }
+                
+                p.vy += (Math.random() - 0.5) * 0.05;
+                
+                // Damping
+                p.vx *= 0.99;
+                p.vy *= 0.99;
+                
+                // Update position
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                // Boundaries
+                if (p.x < 0) p.x = 0;
+                if (p.x > 100) p.x = 100;
+                if (p.y < 0) { p.y = 0; p.vy *= -1; }
+                if (p.y > 100) { p.y = 100; p.vy *= -1; }
+                
+                p.element.style.left = p.x + '%';
+                p.element.style.top = p.y + '%';
+                
+                // Opacity based on position and slider
+                const relevance = p.type === 'certainty' 
+                    ? 1 - (sliderValue / 100)
+                    : sliderValue / 100;
+                p.element.style.opacity = 0.3 + relevance * 0.7;
+            });
+            
+            requestAnimationFrame(updateParticles);
+        }
+
+        updateParticles();
+
+        function getReflection(value) {
+            let category;
+            if (value < 20) category = 'certainty';
+            else if (value < 40) category = 'leanCertainty';
+            else if (value < 60) category = 'balance';
+            else if (value < 80) category = 'leanDoubt';
+            else category = 'doubt';
+            
+            const options = reflections[category];
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        let questionTimeout;
+        slider.addEventListener('input', function() {
+            sliderValue = this.value;
+            reflection.textContent = getReflection(sliderValue);
+            
+            // Change question occasionally
+            clearTimeout(questionTimeout);
+            questionTimeout = setTimeout(() => {
+                question.style.opacity = 0;
+                setTimeout(() => {
+                    question.textContent = questions[Math.floor(Math.random() * questions.length)];
+                    question.style.opacity = 1;
+                }, 500);
+            }, 1500);
+        });
+
+        // Initial state
+        reflection.textContent = getReflection(50);
+    </script>
+</body>
+</html>
